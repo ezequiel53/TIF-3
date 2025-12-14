@@ -1,67 +1,59 @@
+-- Proyecto: EDUCONNECTA-TIF
+
+-- 1. Tabla PERSONA
+-- Base para Usuario, Alumno y Profesor (Relación 1 a 1)
 CREATE TABLE persona (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
     apellido VARCHAR(100) NOT NULL,
-    dni VARCHAR(20),
-    fecha_nac DATE
+    dni VARCHAR(20) UNIQUE NOT NULL,
+    fechaNacimiento DATE
 );
 
+-- 2. Tabla USUARIO (Relación 1 a 1 con Persona)
 CREATE TABLE usuario (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    rol VARCHAR(50) NOT NULL,
-    persona_id BIGINT NOT NULL,
-    CONSTRAINT fk_usuario_persona
-        FOREIGN KEY (persona_id) REFERENCES persona(id)
-        ON DELETE CASCADE
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    passwordHash VARCHAR(255) NOT NULL,
+    rol VARCHAR(20),
+    persona_id BIGINT UNIQUE, -- Clave Foránea a Persona (1:1)
+    FOREIGN KEY (persona_id) REFERENCES persona(id)
 );
 
+-- 3. Tabla ALUMNO (Relación 1 a 1 con Persona)
 CREATE TABLE alumno (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    legajo VARCHAR(50) NOT NULL UNIQUE,
-    persona_id BIGINT NOT NULL,
-    CONSTRAINT fk_alumno_persona
-        FOREIGN KEY (persona_id) REFERENCES persona(id)
-        ON DELETE CASCADE
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    legajo VARCHAR(50) UNIQUE NOT NULL,
+    persona_id BIGINT UNIQUE, -- Clave Foránea a Persona (1:1)
+    FOREIGN KEY (persona_id) REFERENCES persona(id)
 );
 
+-- 4. Tabla PROFESOR (Relación 1 a 1 con Persona)
 CREATE TABLE profesor (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
     titulo VARCHAR(100),
-    persona_id BIGINT NOT NULL,
-    CONSTRAINT fk_profesor_persona
-        FOREIGN KEY (persona_id) REFERENCES persona(id)
-        ON DELETE CASCADE
+    persona_id BIGINT UNIQUE, -- Clave Foránea a Persona (1:1)
+    FOREIGN KEY (persona_id) REFERENCES persona(id)
 );
 
+-- 5. Tabla CURSO (Relación 1 a Muchos con Profesor)
+-- La FK 'profesor_id' está en la tabla N (Curso)
 CREATE TABLE curso (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(150) NOT NULL,
-    descripcion VARCHAR(500),
-    cupo INT DEFAULT 30,
-    profesor_id BIGINT,
-    CONSTRAINT fk_curso_profesor
-        FOREIGN KEY (profesor_id) REFERENCES profesor(id)
-        ON DELETE SET NULL
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    descripcion VARCHAR(255) NOT NULL,
+    cupo INT NOT NULL,
+    profesor_id BIGINT, -- Clave Foránea a Profesor (N:1)
+    FOREIGN KEY (profesor_id) REFERENCES profesor(id)
 );
 
+-- 6. Tabla INSCRIPCION (Relación 1 a Muchos con Alumno y Curso)
+-- Contiene las FKs de las tablas relacionadas (Alumno y Curso)
 CREATE TABLE inscripcion (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    alumno_id BIGINT NOT NULL,
-    curso_id BIGINT NOT NULL,
-    fecha_inscripcion DATE DEFAULT (CURRENT_DATE),
-    estado VARCHAR(20) DEFAULT 'INSCRITO',
-    CONSTRAINT fk_inscripcion_alumno
-        FOREIGN KEY (alumno_id) REFERENCES alumno(id)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_inscripcion_curso
-        FOREIGN KEY (curso_id) REFERENCES curso(id)
-        ON DELETE CASCADE,
-    CONSTRAINT uq_alumno_curso UNIQUE (alumno_id, curso_id)
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    alumno_id BIGINT, -- Clave Foránea a Alumno (N:1)
+    curso_id BIGINT, -- Clave Foránea a Curso (N:1)
+    fechaInscripcion DATE NOT NULL,
+    estado VARCHAR(20),
+    FOREIGN KEY (alumno_id) REFERENCES alumno(id),
+    FOREIGN KEY (curso_id) REFERENCES curso(id)
 );
-
-
-CREATE INDEX idx_persona_dni ON persona(dni);
-CREATE INDEX idx_curso_profesor ON curso(profesor_id);
-
